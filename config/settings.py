@@ -1,15 +1,16 @@
 import os
 from dotenv import load_dotenv
 
+# Load environment variables
 load_dotenv()
 
 class Settings:
     # API Configuration
-    API_HOST = "0.0.0.0"
-    API_PORT = 8000
+    API_HOST = os.getenv("API_HOST", "0.0.0.0")
+    API_PORT = int(os.getenv("API_PORT", 8000))
     
     # AIPipe Configuration (instead of direct OpenAI)
-    AIPIPE_TOKEN = os.getenv("AIPIPE_TOKEN", "")
+    AIPIPE_TOKEN = os.getenv("AIPIPE_TOKEN", "your_aipipe_token_here")
     OPENAI_BASE_URL = "https://aipipe.org/openrouter/v1"  # For chat completions
     OPENAI_EMBEDDING_URL = "https://aipipe.org/openai/v1"  # For embeddings
     
@@ -21,6 +22,10 @@ class Settings:
     DISCOURSE_BASE_URL = "https://discourse.onlinedegree.iitm.ac.in"
     TDS_COURSE_URL = "https://tds.s-anand.net"
     
+    # Discourse Authentication
+    DISCOURSE_USERNAME = os.getenv("DISCOURSE_USERNAME", "placeholder_username")
+    DISCOURSE_PASSWORD = os.getenv("DISCOURSE_PASSWORD", "placeholder_password")
+    
     # Data paths
     RAW_DATA_PATH = "data/raw"
     PROCESSED_DATA_PATH = "data/processed"
@@ -29,4 +34,5 @@ class Settings:
     REQUEST_DELAY = 1  # seconds between requests
     MAX_RETRIES = 3
 
+# Create settings instance
 settings = Settings()

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TDS Virtual TA</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #dc3545;
+            text-align: center;
+        }
+        .input-section {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #dc3545;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #c82333;
+        }
+        .response-section {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            display: none;
+        }
+        .loading {
+            text-align: center;
+            color: #666;
+        }
+        .metadata {
+            font-size: 12px;
+            color: #666;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 TDS Virtual Teaching Assistant</h1>
+        <p style="text-align: center; color: #666;">
+            Ask questions about Tools in Data Science course content
+        </p>
+        
+        <div class="input-section">
+            <label for="question">Your Question:</label>
+            <textarea id="question" rows="3" placeholder="e.g., How do I use Docker in TDS?"></textarea>
+        </div>
+        
+        <div class="input-section">
+            <label for="context">Context (optional):</label>
+            <select id="context">
+                <option value="general">General</option>
+                <option value="docker">Docker</option>
+                <option value="git">Git</option>
+                <option value="python">Python</option>
+            </select>
+        </div>
+        
+        <button onclick="askQuestion()">Ask Virtual TA</button>
+        
+        <div id="response" class="response-section">
+            <div id="loading" class="loading">🤔 Thinking...</div>
+            <div id="answer" style="display: none;">
+                <h3>Answer:</h3>
+                <div id="answer-text"></div>
+                <div id="metadata" class="metadata"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function askQuestion() {
+            const question = document.getElementById('question').value;
+            const context = document.getElementById('context').value;
+            
+            if (!question.trim()) {
+                alert('Please enter a question');
+                return;
+            }
+            
+            // Show loading
+            document.getElementById('response').style.display = 'block';
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('answer').style.display = 'none';
+            
+            try {
+                const response = await fetch('http://localhost:8000/ask', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        question: question,
+                        context: context
+                    })
+                });
+                
+                const data = await response.json();
+                
+                // Hide loading, show answer
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('answer').style.display = 'block';
+                
+                // Display answer
+                document.getElementById('answer-text').innerHTML = data.answer.replace(/\n/g, '<br>');
+                document.getElementById('metadata').innerHTML = `
+                    <strong>Confidence:</strong> ${(data.confidence * 100).toFixed(1)}% | 
+                    <strong>Sources:</strong> ${data.sources.join(', ')} | 
+                    <strong>Enhanced:</strong> ${data.enhanced ? 'Yes' : 'No'} |
+                    <strong>Time:</strong> ${new Date(data.timestamp).toLocaleTimeString()}
+                `;
+                
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('answer').style.display = 'block';
+                document.getElementById('answer-text').innerHTML = 'Error: Could not connect to the Virtual TA. Make sure the API server is running.';
+                document.getElementById('metadata').innerHTML = '';
+            }
+        }
+        
+        // Allow Enter key to submit
+        document.getElementById('question').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                askQuestion();
+            }
+        });
+    </script>
+</body>
+</html>
